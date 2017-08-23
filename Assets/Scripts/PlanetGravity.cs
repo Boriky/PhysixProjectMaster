@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class PlanetGravity : MonoBehaviour
 {
-    public float m_pullRadius = 2;
-    public float m_pullForce = 1;
-    public ParticleSystem m_explosion = null;
+    [Header("Gameplay values")]
+    [SerializeField]
+    float m_pullRadius = 2;
+    [SerializeField]
+    float m_pullForce = 1;
 	
 	// Update is called once per frame
 	void FixedUpdate ()
@@ -17,35 +19,12 @@ public class PlanetGravity : MonoBehaviour
             Vector3 forceDirection = transform.position - collider.transform.position;
 
             // apply force on target towards me
-            collider.GetComponent<Rigidbody>().AddForce(forceDirection.normalized * m_pullForce * Time.fixedDeltaTime);
-        }
-    }
-
-    void OnCollisionEnter(Collision col)
-    {
-        Instantiate(m_explosion, col.transform.position, col.transform.rotation);
-        ParticleSystem.EmissionModule emission = m_explosion.emission;
-        emission.enabled = true;
-
-        if (col.gameObject.tag == "Player")
-        {
-            Camera.main.transform.parent = null;
-            Destroy(col.gameObject);
-        }
-
-        if (col.gameObject.tag == "Planet")
-        {
-            Destroy(col.gameObject);
-        }
-
-        if (col.gameObject.tag == "Bullet")
-        {
-            Destroy(col.gameObject);
-
-            if (gameObject.tag == "Moon")
+            Rigidbody rb = collider.GetComponent<Rigidbody>();
+            if (rb != null)
             {
-                Destroy(gameObject);
+                rb.AddForce(forceDirection.normalized * m_pullForce * Time.fixedDeltaTime);
             }
         }
     }
 }
+

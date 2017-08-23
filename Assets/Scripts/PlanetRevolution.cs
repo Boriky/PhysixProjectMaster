@@ -2,17 +2,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlanetRevolution : MonoBehaviour {
+public class PlanetRevolution : MonoBehaviour
+{
+    [Header("References")]
+    [SerializeField]
+    GameObject m_sun = null;
 
-    public GameObject m_sun = null;
-    public float m_revolutionVelocity = 5.0f;
+    [Header("Gameplay values")]
+    [SerializeField]
+    float m_revolutionVelocity = 5.0f;
+    [SerializeField]
+    float m_rotationVelocity = 5.0f;
 
     private Rigidbody m_rb;
 
 	// Use this for initialization
-	void Start () {
+	void Start ()
+    {
         m_rb = GetComponent<Rigidbody>();
-	}
+        m_rb.AddTorque(transform.up * m_rotationVelocity, ForceMode.Impulse);
+    }
 	
 	// Update is called once per frame
 	void FixedUpdate ()

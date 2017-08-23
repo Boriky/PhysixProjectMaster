@@ -4,10 +4,24 @@ using UnityEngine;
 
 public class Grab : MonoBehaviour {
 
-    public float m_grabDistance = 50.0f;
-    public float m_pointToReach = 30.0f;
-    public float m_pullForce = 1;
-    public ParticleSystem m_particleSystem = null;
+    [Header("Gameplay values")]
+    [SerializeField]
+    float m_grabDistance = 50.0f;
+    [SerializeField]
+    float m_pointToReach = 30.0f;
+    [SerializeField]
+    float m_pullForce = 1;
+
+    [Header("Effects")]
+    [SerializeField]
+    ParticleSystem m_particleSystem = null;
+    [SerializeField]
+    AudioSource m_forceFX = null;
+
+    [HideInInspector]
+    public bool m_canGrab = false;
+    [HideInInspector]
+    public bool m_destroyPlanetCondition = false;
 
     // Use this for initialization
     void Start ()
@@ -24,43 +38,48 @@ public class Grab : MonoBehaviour {
         ParticleSystem.MainModule particleSettings = m_particleSystem.main;
         RaycastHit hit;
 
-        if (Input.GetKey(KeyCode.Mouse0) && Physics.Raycast(transform.position, fwd, out hit, m_grabDistance))
+        if (Physics.Raycast(transform.position, fwd, out hit, m_grabDistance) && hit.transform.tag == "Planet")
         {
-            if(hit.transform.tag == "Planet" && hit.transform.childCount == 0)
+            m_canGrab = true;
+
+            if (hit.transform.childCount == 0)
             {
-                particleSettings.startColor = Color.blue;
+                m_destroyPlanetCondition = true;
 
-                emission.enabled = true;
+                if (Input.GetKey(KeyCode.Mouse0))
+                {
+                    if (!m_forceFX.isPlaying)
+                        m_forceFX.Play();
 
-                hit.transform.GetComponent<Rigidbody>().AddForce(-fwd * m_pullForce * Time.fixedDeltaTime);
-            }
+                    particleSettings.startColor = Color.blue;
+
+                    emission.enabled = true;
+
+                    hit.transform.GetComponent<Rigidbody>().AddForce(-fwd * m_pullForce * Time.fixedDeltaTime);
+                }
+
+                if (Input.GetKey(KeyCode.Mouse1))
+                {
+                    if (!m_forceFX.isPlaying)
+                        m_forceFX.Play();
+
+                    particleSettings.startColor = Color.red;
+
+                    emission.enabled = true;
+
+                    hit.transform.GetComponent<Rigidbody>().AddForce(fwd * m_pullForce * Time.fixedDeltaTime);
+                }
+            } 
+        }
+        else
+        {
+            m_canGrab = false;
         }
 
-        if (Input.GetKey(KeyCode.Mouse1) && Physics.Raycast(transform.position, fwd, out hit, m_grabDistance))
+        if (Input.GetKeyUp(KeyCode.Mouse1) || Input.GetKeyUp(KeyCode.Mouse0) || !m_canGrab)
         {
-            if (hit.transform.tag == "Planet" && hit.transform.childCount == 0)
-            {
-                particleSettings.startColor = Color.red;
-
-                emission.enabled = true;
-
-                hit.transform.GetComponent<Rigidbody>().AddForce(fwd * m_pullForce * Time.fixedDeltaTime);
-            }
-        }
-
-        if (Input.GetKeyUp(KeyCode.Mouse1) || Input.GetKeyUp(KeyCode.Mouse0))
-        {
+            m_forceFX.Stop();
             emission.enabled = false;
         }
     }
 }
-
-
-
-
-/*print("Planet in sight!");
-
-if (Physics.Raycast(transform.position, fwd, out hit, m_pointToReach))
-{
-    hit.transform.GetComponent<Rigidbody>().AddForce(fwd * m_pullForce * Time.fixedDeltaTime);
-}*/
